@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:websocket="http://www.springframework.org/schema/websocket"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/mvc
+         http://www.springframework.org/schema/mvc/spring-mvc.xsd
+         http://www.springframework.org/schema/websocket
+         http://www.springframework.org/schema/websocket/spring-websocket-4.0.xsd
+">
+
+    <!--扫描包路径-->
+    <context:component-scan base-package="com.zhonghaijun.ssj.web.controller"/>
+    <!--扫描esaypoi的包路径-->
+    <context:component-scan base-package="cn.afterturn.easypoi.view"/>
+
+    <!--p:order='0'表示顺序在最前面，加载spring的视图解析器-->
+    <bean id="beanNameViewResvolver" class="org.springframework.web.servlet.view.BeanNameViewResolver"
+          p:order="0"/>
+
+    <!--释放静态资源-->
+    <mvc:default-servlet-handler/>
+    <!--支持注解-->
+    <mvc:annotation-driven>
+    <!--响应JSON中文数据乱码-->
+        <mvc:message-converters register-defaults="true">
+            <!-- 解决Controller返回json中文乱码问题 -->
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json; charset=UTF-8</value>
+                        <value>application/x-www-form-urlencoded; charset=UTF-8</value>
+                    </list>
+                </property>
+                <!-- 配置 objectMapper 为我们自定义扩展后的 CustomMapper -->
+                <property name="objectMapper">
+                    <bean class="com.zhonghaijun.ssj.common.CustomMapper">
+                    </bean>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    <!--视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+    <!--配置文件上传解析器-->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!--文件大小-->
+        <property name="maxUploadSize">
+            <value>999999999</value>
+        </property>
+        <property name="defaultEncoding">
+            <value>UTF-8</value>
+        </property>
+    </bean>
+    <!--websocket消息处理-->
+    <bean id="myhandler" class="com.zhonghaijun.ssj.web.websocket.MyHandler"></bean>
+    <websocket:handlers>
+        <websocket:mapping path="/websocket/msg" handler="myhandler"/>
+        <!--配置拦截器-->
+        <websocket:handshake-interceptors>
+            <bean class="com.zhonghaijun.ssj.web.websocket.WebSocketInterceptor"/>
+        </websocket:handshake-interceptors>
+    </websocket:handlers>
+
+    <!--配置消息的最大缓冲区-->
+    <bean class="org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean">
+        <property name="maxTextMessageBufferSize" value="8192"/>
+        <property name="maxBinaryMessageBufferSize" value="8192"/>
+    </bean>
+
+</beans>

@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="SmartSell:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="SSJ2.war">
+      <element id="artifact" artifact-name="SmartSell:war exploded" />
+    </root>
+  </artifact>
+</component>

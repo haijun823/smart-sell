@@ -1,0 +1,5 @@
+com\zhonghaijun\ssj\service\impl\BaseServiceImplTest.class
+com\zhonghaijun\ssj\service\shiro\ShiroTest.class
+com\zhonghaijun\ssj\repository\BaseTest.class
+com\zhonghaijun\ssj\repository\BaseTest2.class
+com\zhonghaijun\ssj\service\shiro\MyRealm.class

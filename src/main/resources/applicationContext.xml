@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/tx
+         http://www.springframework.org/schema/tx/spring-tx.xsd
+         http://www.springframework.org/schema/data/jpa
+         http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+">
+
+    <!--扫描domain层-->
+    <context:component-scan base-package="com.zhonghaijun.ssj.repository"/>
+    <context:component-scan base-package="com.zhonghaijun.ssj.service"/>
+    <!--扫描  导入验证器-->
+    <context:component-scan base-package="com.zhonghaijun.ssj.validate"/>
+    <!--扫描数据源的配置文件-->
+    <context:property-placeholder location="classpath:db/jdbc.properties"/>
+    <!--配置数据源-->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+    <!--需要使用 LocalContainerEntityManagerFactoryBean ，因为只有这个对象才能支持persistanceContext注解-->
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <!--配置数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--扫描domain层包,将里面的对象纳入到entityManger的管理当中-->
+        <property name="packagesToScan" value="com.zhonghaijun.ssj.domain"/>
+        <!--配置适配器，其目的是告诉spring框架我当前JPA用的ORM框架为hibernate-->
+        <property name="jpaVendorAdapter">
+            <!--找到hibernate的适配器-->
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <!--配置方言-->
+                <property name="databasePlatform" value="org.hibernate.dialect.MySQLDialect"/>
+                <!--配置数据库建表策略-->
+                <property name="generateDdl" value="true"/>
+                <!--配置sql语句显示-->
+                <property name="showSql" value="true"/>
+            </bean>
+        </property>
+    </bean>
+    <!--开启事务管理器-->
+    <!--id一定不要随意改动，因为默认回去找 id为transactionManager-->
+    <!--支持全注解-->
+    <tx:annotation-driven/>
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+    <!--如果一定要改,就在支持全注解的标签当中更改-->
+
+
+    <!--将dao层改为repository（springdataJpa建议）-->
+    <!--将repository扫描到jpa当中去，添加事务管理管理器，并且添加entityManagerFactory对象-->
+    <jpa:repositories base-package="com.zhonghaijun.ssj.repository"
+                      transaction-manager-ref="transactionManager"
+                      entity-manager-factory-ref="entityManagerFactory"
+                      factory-class="com.zhonghaijun.ssj.repository.impl.BaseRepositoryFactoryBean"/>
+
+
+    <!--引入shiro的配置文件-->
+    <import resource="applicationContext-shiro.xml"/>
+    <!--邮箱配置文件-->
+    <import resource="applicationContext-email.xml"/>
+</beans>
